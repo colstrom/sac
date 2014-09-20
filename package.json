@@ -19,5 +19,9 @@
     },
     "dependencies": {
         "requirejs": ">=2.0.12"
-    }
+    },
+    "directories": {
+        "bin": "./bin"
+    },
+    "preferGlobal": true
 }
