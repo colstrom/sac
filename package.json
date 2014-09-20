@@ -1,0 +1,14 @@
+{
+    "name": "sac",
+    "description": "Small and Crunchy, a minifying asset server.",
+    "version": "1.0.0",
+    "license": "MIT",
+    "author": {
+        "name": "Chris Olstrom",
+        "email": "chris@olstrom.com",
+        "url": "http://chris.olstrom.com/"
+    },
+    "devDependencies": {
+        "requirejs": ">=2.0.12"
+    }
+}
