@@ -1,3 +1,7 @@
+#!/usr/bin/env node
+
+'use strict';
+
 var http = require('http');
 var fs = require('fs');
 var process = require('child_process');
