@@ -6,12 +6,12 @@ SaC is a tiny service to take big things and make them small. It accepts request
 Installation
 ------------
 
-  npm install -g sac
+    npm install -g sac
 
 Usage
 -----
 
-  $ sac
+    sac
 
 Seriously, that's it (unless you need to change the defaults, see "Configuration" below).
 
@@ -22,7 +22,7 @@ Example
 
 Assuming default configuration...
 
-  curl http://localhost:40480/scripts/jquery.min.js
+    curl http://localhost:40480/scripts/jquery.min.js
 
 SaC looks for jquery.js at /data/www/docroot/scripts/jquery.js
 
@@ -33,23 +33,18 @@ HTTP Status Codes
 
 SaC will return reasonably sane HTTP status codes with most responses.
 
-200: Success
-  This is the expected response, when everything goes as planned.
-
-403: Forbidden
-  SaC will refuse requests for non-minified resources. It is a minifying asset server, after all.
-
-404: Not Found
-  The file doesn't exist under the configured docroot.
-
-415: Unsupported Media Type
-  The requested asset isn't of a supported type.
-
-418: I'm a teapot.
-  Request did not include a specific resource. Asking to minify nothing is an interesting concept.
-
-501: Unable to Comply
-  This generally happens when requirejs cannot be invoked.
+* 200: Success
+  * This is the expected response, when everything goes as planned.
+* 403: Forbidden
+  * SaC will refuse requests for non-minified resources. It is a minifying asset server, after all.
+* 404: Not Found
+  * The file doesn't exist under the configured docroot.
+* 415: Unsupported Media Type
+  * The requested asset isn't of a supported type.
+* 418: I'm a teapot.
+  * Request did not include a specific resource. Asking to minify nothing is an interesting concept.
+* 501: Unable to Comply
+  * This generally happens when requirejs cannot be invoked.
 
 Configuration
 -------------
@@ -58,16 +53,16 @@ SaC has some (not many) configurable options, mostly to accomodate systems that 
 
 To configure an alternate docroot, use the aptly named 'docroot' argument.
 
-  --docroot </path/to/docroot>
+    sac --docroot </path/to/docroot>
 
 By default, SaC listens on port 40480 for connections, and 40481 as a web-accessible status page. This can be changed with the 'port' argument. The status page will be available on (port + 1).
 
 Attempting to bind to a port below 1024 will require root, and is generally advised against.
 
-  --port <1025-65534>
+    sac --port <1025-65534>
 
 On most Linux systems, requirejs installs to '/usr/bin/r.js' via npm. This is the default assumption. On BSD derivatives (including OSX), it is usually found at /usr/local/bin/r.js. On Solaris systems, it's probably somewhere else (/opt/local/bin/r.js or something along those lines).
 
 You can check with 'which r.js', and set the 'requirejs' argument accordingly.
 
-  --requirejs /usr/local/bin/r.js
+    sac --requirejs /usr/local/bin/r.js
