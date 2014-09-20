@@ -2,7 +2,9 @@
 
 'use strict';
 
-var http = require('http'),
+var cluster = require('cluster'),
+    http = require('http'),
+    os = require('os'),
     fs = require('fs'),
     process = require('child_process'),
     config = require('nconf');
@@ -13,49 +15,75 @@ config.argv().defaults({
     'requirejs': '/usr/bin/r.js'
 });
 
-console.log('.:[ Small and Crunchy :: Minifying Content Server ]:.');
-http.createServer(function(request, response) {
-  var command = config.get('requirejs') + ' -o out=stdout logLevel=4 baseUrl=' + config.get('docroot') + ' name=';
+if (cluster.isMaster) {
+  console.log('.:[ Small and Crunchy :: Minifying Content Server ]:.');
+  console.info('  | Docking at Port ' + config.get('port'));
+  console.info('  | Detected ' + os.cpus().length + ' cores available, soliciting minions to work them.\n')
 
-  if (~request.url.search(/\.(js|css)$/)) {
-    if (~request.url.search(/\.min\.(js|css)$/)) {
-      request.url = request.url.replace(/\.min/, '');
+  cluster.on('fork', function(minion) {
+    console.log('Minion ' + minion.process.pid + ' has joined the party.');
+  });
 
-      fs.exists(config.get('docroot') + request.url, function (exists) {
-        if (exists) {
-          command = command + request.url.replace(/^\//, '').replace(/\.(js|css)$/, '');
-          process.exec(command, function(error, stdout, stderr) {
-            if (error) {
-              response.writeHead(501);
-              response.end('I\'d like to do that, but I don\'t seem to be able to.');
-              console.log(command, stderr, error);
-            } else {
-              var content_type = 'text/plain';
-              if (~request.url.search(/\.js$/)) {
-                content_type = 'application/javascript';
-              } else if (~request.url.search(/\.css$/)) {
-                content_type = 'text/css';
-              }
-              response.writeHead(200, { 'Content-Type': content_type });
-              response.end(stdout);
-            }
-          });
-        } else {
-          response.writeHead(404);
-          response.end('I don\'t have a thing like that. Go Fish.');
-        }
-      });
-    } else {
-      response.writeHead(403);
-      response.end('I know what that is, but you don\'t need my help to get things like that.');
-    }
-  } else {
-    if (~request.url.search(/^\/$/)) {
-      response.writeHead(418);
-      response.end('How Zen.');
-    } else {
-      response.writeHead(415);
-      response.end('What is this "' + request.url.match(/\.(.*)$/)[1] + '" thing you ask for?');
-    }
+  cluster.on('online', function(minion) {
+    console.log('Minion ' + minion.process.pid + ' is ready for orders.');
+  });
+
+  cluster.on('disconnect', function(minion) {
+    console.log('Minion ', + minion.process.pid + ' has left the party');
+  });
+
+  cluster.on('exit', function(minion, code, signal) {
+    console.log('Minion ' + minion.process.pid + ' has died. Requesting reinforcements.');
+    cluster.fork();
+  });
+
+  for (var processor in os.cpus()) {
+    cluster.fork();
   }
-}).listen(config.get('port'));
+} else {
+  http.createServer(function(request, response) {
+    var command = config.get('requirejs') + ' -o out=stdout logLevel=4 baseUrl=' + config.get('docroot') + ' name=';
+
+    if (~request.url.search(/\.(js|css)$/)) {
+      if (~request.url.search(/\.min\.(js|css)$/)) {
+        request.url = request.url.replace(/\.min/, '');
+
+        fs.exists(config.get('docroot') + request.url, function (exists) {
+          if (exists) {
+            command = command + request.url.replace(/^\//, '').replace(/\.(js|css)$/, '');
+            process.exec(command, function(error, stdout, stderr) {
+              if (error) {
+                response.writeHead(501);
+                response.end('I\'d like to do that, but I don\'t seem to be able to.');
+                console.log(command, stderr, error);
+              } else {
+                var content_type = 'text/plain';
+                if (~request.url.search(/\.js$/)) {
+                  content_type = 'application/javascript';
+                } else if (~request.url.search(/\.css$/)) {
+                  content_type = 'text/css';
+                }
+                response.writeHead(200, { 'Content-Type': content_type });
+                response.end(stdout);
+              }
+            });
+          } else {
+            response.writeHead(404);
+            response.end('I don\'t have a thing like that. Go Fish.');
+          }
+        });
+      } else {
+        response.writeHead(403);
+        response.end('I know what that is, but you don\'t need my help to get things like that.');
+      }
+    } else {
+      if (~request.url.search(/^\/$/)) {
+        response.writeHead(418);
+        response.end('How Zen.');
+      } else {
+        response.writeHead(415);
+        response.end('What is this "' + request.url.match(/\.(.*)$/)[1] + '" thing you ask for?');
+      }
+    }
+  }).listen(config.get('port'));
+}
