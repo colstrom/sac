@@ -51,18 +51,26 @@ Configuration
 
 SaC has some (not many) configurable options, mostly to accomodate systems that don't line up with the defaults. These are all passed in at as runtime arguments.
 
-To configure an alternate docroot, use the aptly named 'docroot' argument.
+**docroot** _(default: /data/www/docroot)_
+
+This is where SaC expects to find the canonical assets.
 
     sac --docroot </path/to/docroot>
 
-By default, SaC listens on port 40480 for connections, and 40481 as a web-accessible status page. This can be changed with the 'port' argument. The status page will be available on (port + 1).
+**port** _(default: 40480)_
+
+The port SaC will listen on for connections (a web-accessible status page can be found at (port + 1)).
 
 Attempting to bind to a port below 1024 will require root, and is generally advised against.
 
     sac --port <1025-65534>
 
-On most Linux systems, requirejs installs to '/usr/bin/r.js' via npm. This is the default assumption. On BSD derivatives (including OSX), it is usually found at /usr/local/bin/r.js. On Solaris systems, it's probably somewhere else (/opt/local/bin/r.js or something along those lines).
+**requirejs** _(default: /usr/bin/r.js)_
 
-You can check with 'which r.js', and set the 'requirejs' argument accordingly.
+Since SaC uses requirejs to minify content, it needs to know where to find it. This may vary by operating system and configuration.
+* On most Linux systems, requirejs installs to '/usr/bin/r.js' via npm. This is the default assumption.
+* On BSD derivatives (including OSX), it is usually found at /usr/local/bin/r.js.
+* On Solaris and derivatives (including SmartOS), it's probably somewhere else (/opt/local/bin/r.js or something along those lines).
+* If you're not sure where to find it, and SaC is responding with HTTP 501s, you can check with 'which r.js'.
 
     sac --requirejs /usr/local/bin/r.js
