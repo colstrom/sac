@@ -13,7 +13,7 @@ config.argv().defaults({
     'requirejs': '/usr/bin/r.js'
 });
 
-console.log('Small and Crunchy Minifying Content Server', 'Configuration', config);
+console.log('.:[ Small and Crunchy :: Minifying Content Server ]:.');
 http.createServer(function(request, response) {
   var command = config.get('requirejs') + ' -o out=stdout logLevel=4 baseUrl=' + config.get('docroot') + ' name=';
 
