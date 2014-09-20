@@ -49,7 +49,7 @@ SaC will return reasonably sane HTTP status codes with most responses.
 Configuration
 -------------
 
-SaC has some (not many) configurable options, mostly to accomodate systems that don't line up with the defaults. These are all passed in at as runtime arguments.
+SaC has some (not many) configurable options, mostly to accomodate systems that don't line up with the defaults. These are all passed in as runtime arguments.
 
 **docroot** _(default: /data/www/docroot)_
 
