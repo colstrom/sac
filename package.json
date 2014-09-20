@@ -5,7 +5,7 @@
         "minify",
         "minification"
     ],
-    "version": "1.0.1",
+    "version": "1.1.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -18,7 +18,8 @@
         "url": "http://chris.olstrom.com/"
     },
     "dependencies": {
-        "requirejs": ">=2.0.12"
+        "requirejs": ">=2.0.12",
+        "nconf": ">=0.6.9"
     },
     "directories": {
         "bin": "./bin"
