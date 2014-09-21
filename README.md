@@ -13,7 +13,7 @@ Usage
 
     sac
 
-Seriously, that's it (unless you need to change the defaults, see the section on "[Configuration](//github.com/colstrom/sac#configuration)").
+Seriously, that's it (unless you need to change the defaults, see the section on "[Configuration](#configuration)").
 
 SaC will launch, check the number of cores on your system, and spawn a minion for each core. It will then listen on port 40480 and accept requests for any resource ending in .min.js, or .min.css. When it gets a request, it will find the unminified file version, and respond with a minified copy.
 
@@ -71,6 +71,6 @@ Since SaC uses requirejs to minify content, it needs to know where to find it. T
 * On most Linux systems, requirejs installs to '/usr/bin/r.js' via npm. This is the default assumption.
 * On BSD derivatives (including OSX), it is usually found at /usr/local/bin/r.js.
 * On Solaris and derivatives (including SmartOS), it's probably somewhere else (/opt/local/bin/r.js or something along those lines).
-* If you're not sure where to find it, and SaC is responding with an [HTTP 501](//github.com/colstrom/sac#http-status-codes), you can check with 'which r.js'.
+* If you're not sure where to find it, and SaC is responding with an [HTTP 501](#http-status-codes), you can check with 'which r.js'.
 
     sac --requirejs /usr/local/bin/r.js
