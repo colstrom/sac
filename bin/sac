@@ -6,7 +6,7 @@ var cluster = require('cluster'),
     http = require('http'),
     os = require('os'),
     fs = require('fs'),
-    process = require('child_process'),
+    child = require('child_process'),
     config = require('nconf');
 
 config.argv().defaults({
@@ -27,9 +27,11 @@ function configuration() {
        + '  | Expecting requirejs at ' + config.get('requirejs') + '\n';
 }
 
+
 if (cluster.isMaster) {
   http.createServer(function(request, response) {
-    response.writeHead(200, { 'Content-Type': 'text/html' });
+    response.statusCode = 200;
+    response.setHeader('Content-Type', 'text/html');
     response.write('<h1>' + banner() + '</h1>');
     response.end('<pre>' + configuration() + '</pre>');
   }).listen(config.get('port') + 1);
@@ -67,37 +69,37 @@ if (cluster.isMaster) {
         fs.exists(config.get('docroot') + request.url, function (exists) {
           if (exists) {
             command = command + request.url.replace(/^\//, '').replace(/\.(js|css)$/, '');
-            process.exec(command, function(error, stdout, stderr) {
+            child.exec(command, function(error, stdout, stderr) {
               if (error) {
-                response.writeHead(501);
+                response.statusCode = 501;
                 response.end('I\'d like to do that, but I don\'t seem to be able to.');
                 console.log(command, stderr, error);
               } else {
-                var content_type = 'text/plain';
+                response.setHeader('Content-Type', 'text/plain');
                 if (~request.url.search(/\.js$/)) {
-                  content_type = 'application/javascript';
+                  response.setHeader('Content-Type', 'application/javascript');
                 } else if (~request.url.search(/\.css$/)) {
-                  content_type = 'text/css';
+                  response.setHeader('Content-Type', 'text/css');
                 }
-                response.writeHead(200, { 'Content-Type': content_type });
+                response.statusCode = 200;
                 response.end(stdout);
               }
             });
           } else {
-            response.writeHead(404);
+            response.statusCode = 404;
             response.end('I don\'t have a thing like that. Go Fish.');
           }
         });
       } else {
-        response.writeHead(403);
+        response.statusCode = 403;
         response.end('I know what that is, but you don\'t need my help to get things like that.');
       }
     } else {
       if (~request.url.search(/^\/$/)) {
-        response.writeHead(418);
+        response.statusCode = 418;
         response.end('How Zen.');
       } else {
-        response.writeHead(415);
+        response.statusCode = 415;
         response.end('What is this "' + request.url.match(/\.(.*)$/)[1] + '" thing you ask for?');
       }
     }
