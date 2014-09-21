@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <title>SaC by colstrom</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>SaC</h1>
+        <h2>.:[ Small and Crunchy :: Minifying Asset Server ]:.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/colstrom/sac/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/colstrom/sac/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/colstrom/sac" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a name="small-and-crunchy" class="anchor" href="#small-and-crunchy"><span class="octicon octicon-link"></span></a>Small and Crunchy</h1>
+
+<p>SaC is a tiny service to take big things and make them small. It accepts requests for minified CSS or JS files, expects to find non-minified copies on-disk, and serves up the minified one you asked it for.</p>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<pre><code>npm install -g sac
+</code></pre>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<pre><code>sac
+</code></pre>
+
+<p>Seriously, that's it (unless you need to change the defaults, see the section on "<a href="//github.com/colstrom/sac#configuration">Configuration</a>").</p>
+
+<p>SaC will launch, check the number of cores on your system, and spawn a minion for each core. It will then listen on port 40480 and accept requests for any resource ending in .min.js, or .min.css. When it gets a request, it will find the unminified file version, and respond with a minified copy.</p>
+
+<h2>
+<a name="example" class="anchor" href="#example"><span class="octicon octicon-link"></span></a>Example</h2>
+
+<p>Assuming default configuration...</p>
+
+<pre><code>curl http://localhost:40480/scripts/jquery.min.js
+</code></pre>
+
+<p>SaC looks for jquery.js at /data/www/docroot/scripts/jquery.js</p>
+
+<p>If it exists, /usr/bin/r.js is called and the result is returned in the response body with a 200 status in the header. Content-Type is set to either application/javascript or text/css, depending on the content.</p>
+
+<h2>
+<a name="http-status-codes" class="anchor" href="#http-status-codes"><span class="octicon octicon-link"></span></a>HTTP Status Codes</h2>
+
+<p>SaC will return reasonably sane HTTP status codes with most responses.</p>
+
+<ul>
+<li>200: Success
+
+<ul>
+<li>This is the expected response, when everything goes as planned.</li>
+</ul>
+</li>
+<li>403: Forbidden
+
+<ul>
+<li>SaC will refuse requests for non-minified resources. It is a minifying asset server, after all.</li>
+</ul>
+</li>
+<li>404: Not Found
+
+<ul>
+<li>The file doesn't exist under the configured docroot.</li>
+</ul>
+</li>
+<li>415: Unsupported Media Type
+
+<ul>
+<li>The requested asset isn't of a supported type.</li>
+</ul>
+</li>
+<li>418: I'm a teapot.
+
+<ul>
+<li>Request did not include a specific resource. Asking to minify nothing is an interesting concept.</li>
+</ul>
+</li>
+<li>501: Unable to Comply
+
+<ul>
+<li>This generally happens when requirejs cannot be invoked.</li>
+</ul>
+</li>
+</ul><h2>
+<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>SaC has some (not many) configurable options, mostly to accomodate systems that don't line up with the defaults. These are all passed in as runtime arguments.</p>
+
+<p><strong>docroot</strong> <em>(default: /data/www/docroot)</em></p>
+
+<p>This is where SaC expects to find the canonical assets.</p>
+
+<pre><code>sac --docroot &lt;/path/to/docroot&gt;
+</code></pre>
+
+<p><strong>port</strong> <em>(default: 40480)</em></p>
+
+<p>The port SaC will listen on for connections (a web-accessible status page can be found at (port + 1)).</p>
+
+<p>Attempting to bind to a port below 1024 will require root, and is generally advised against.</p>
+
+<pre><code>sac --port &lt;1025-65534&gt;
+</code></pre>
+
+<p><strong>requirejs</strong> <em>(default: /usr/bin/r.js)</em></p>
+
+<p>Since SaC uses requirejs to minify content, it needs to know where to find it. This may vary by operating system and configuration.</p>
+
+<ul>
+<li>On most Linux systems, requirejs installs to '/usr/bin/r.js' via npm. This is the default assumption.</li>
+<li>On BSD derivatives (including OSX), it is usually found at /usr/local/bin/r.js.</li>
+<li>On Solaris and derivatives (including SmartOS), it's probably somewhere else (/opt/local/bin/r.js or something along those lines).</li>
+<li>
+<p>If you're not sure where to find it, and SaC is responding with an <a href="//github.com/colstrom/sac#http-status-codes">HTTP 501</a>, you can check with 'which r.js'.</p>
+
+<p>sac --requirejs /usr/local/bin/r.js</p>
+</li>
+</ul>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
