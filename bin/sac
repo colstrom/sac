@@ -3,11 +3,8 @@
 'use strict';
 
 var cluster = require('cluster'),
-    http = require('http'),
-    os = require('os'),
-    fs = require('fs'),
-    child = require('child_process'),
-    config = require('nconf');
+    config = require('nconf'),
+    sac = require('../lib/sac');
 
 config.argv().defaults({
     'port': 40480,
@@ -15,91 +12,8 @@ config.argv().defaults({
     'requirejs': '/usr/bin/r.js'
 });
 
-function banner() {
-  return '.:[ Small and Crunchy :: Minifying Asset Server ]:.\n';
-}
-
-function configuration() {
-  return '\nConfiguration:\n'
-       + '  | Docked at Port ' + config.get('port') + '\n'
-       + '  | Detected ' + os.cpus().length + ' cores available, soliciting minions to work them.\n'
-       + '  | Expecting content at ' + config.get('docroot') + '\n'
-       + '  | Expecting requirejs at ' + config.get('requirejs') + '\n';
-}
-
 if (cluster.isMaster) {
-  fs.exists(config.get('requirejs'), function (exists) {
-    if (!exists) {
-      console.error('Terminating due to failed sanity check: RequireJS not found.');
-      process.exit();
-    }
-  });
-
-  http.createServer(function(request, response) {
-    response.statusCode = 200;
-    response.setHeader('Content-Type', 'text/html');
-    response.write('<h1>' + banner() + '</h1>');
-    response.end('<pre>' + configuration() + '</pre>');
-  }).listen(config.get('port') + 1);
-
-  console.log(banner(), configuration());
-
-  cluster.on('fork', function(minion) {
-    console.log('Minion ' + minion.process.pid + ' has joined the party.');
-  }).on('online', function(minion) {
-    console.log('Minion ' + minion.process.pid + ' is ready for orders.');
-  }).on('disconnect', function(minion) {
-    console.log('Minion ', + minion.process.pid + ' has left the party');
-  }).on('exit', function(minion, code, signal) {
-    console.log('Minion ' + minion.process.pid + ' has died. Requesting reinforcements.');
-    cluster.fork();
-  });
-
-  for (var processor in os.cpus()) {
-    cluster.fork();
-  }
+  sac.master(config);
 } else {
-  http.createServer(function(request, response) {
-    if (~request.url.search(/\.(js|css)$/)) {
-      if (~request.url.search(/\.min\.(js|css)$/)) {
-        request.url = request.url.replace(/\.min/, '');
-
-        fs.exists(config.get('docroot') + request.url, function (exists) {
-          if (exists) {
-            var target = request.url.replace(/^\//, '').replace(/\.(js|css)$/, ''),
-                options = ['-o', 'out=stdout', 'logLevel=4', 'baseUrl=' + config.get('docroot'), 'name=' + target],
-                command = child.spawn(config.get('requirejs'), options);
-
-            command.stdout.on('data', function (data) {
-              response.statusCode = 200;
-              response.write(data);
-            }).on('end', function () {
-              response.end();
-            });
-
-            command.stderr.on('data', function (data) {
-              response.statusCode = 500;
-              response.write(data);
-            }).on('end', function () {
-              response.end();
-            });
-          } else {
-            response.statusCode = 404;
-            response.end('I don\'t have a thing like that. Go Fish.');
-          }
-        });
-      } else {
-        response.statusCode = 403;
-        response.end('I know what that is, but you don\'t need my help to get things like that.');
-      }
-    } else {
-      if (~request.url.search(/^\/$/)) {
-        response.statusCode = 418;
-        response.end('How Zen.');
-      } else {
-        response.statusCode = 415;
-        response.end('What is this "' + request.url.match(/\.(.*)$/)[1] + '" thing you ask for?');
-      }
-    }
-  }).listen(config.get('port'));
+  sac.minion(config);
 }
