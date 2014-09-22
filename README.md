@@ -71,6 +71,6 @@ Since SaC uses requirejs to minify content, it needs to know where to find it. T
 * On most Linux systems, requirejs installs to '/usr/bin/r.js' via npm. This is the default assumption.
 * On BSD derivatives (including OSX), it is usually found at /usr/local/bin/r.js.
 * On Solaris and derivatives (including SmartOS), it's probably somewhere else (/opt/local/bin/r.js or something along those lines).
-* If you're not sure where to find it, and SaC is responding with an [HTTP 501](#http-status-codes), you can check with 'which r.js'.
+* If you're not sure where to find it, you can check with 'which r.js'.
 
     sac --requirejs /usr/local/bin/r.js
