@@ -43,8 +43,8 @@ SaC will return reasonably sane HTTP status codes with most responses.
   * The requested asset isn't of a supported type.
 * 418: I'm a teapot.
   * Request did not include a specific resource. Asking to minify nothing is an interesting concept.
-* 501: Unable to Comply
-  * This generally happens when requirejs cannot be invoked.
+* 500: Error
+  * Something went wrong. The response body should include details.
 
 Configuration
 -------------

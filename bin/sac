@@ -27,8 +27,14 @@ function configuration() {
        + '  | Expecting requirejs at ' + config.get('requirejs') + '\n';
 }
 
-
 if (cluster.isMaster) {
+  fs.exists(config.get('requirejs'), function (exists) {
+    if (!exists) {
+      console.error('Terminating due to failed sanity check: RequireJS not found.');
+      process.exit();
+    }
+  });
+
   http.createServer(function(request, response) {
     response.statusCode = 200;
     response.setHeader('Content-Type', 'text/html');
@@ -40,17 +46,11 @@ if (cluster.isMaster) {
 
   cluster.on('fork', function(minion) {
     console.log('Minion ' + minion.process.pid + ' has joined the party.');
-  });
-
-  cluster.on('online', function(minion) {
+  }).on('online', function(minion) {
     console.log('Minion ' + minion.process.pid + ' is ready for orders.');
-  });
-
-  cluster.on('disconnect', function(minion) {
+  }).on('disconnect', function(minion) {
     console.log('Minion ', + minion.process.pid + ' has left the party');
-  });
-
-  cluster.on('exit', function(minion, code, signal) {
+  }).on('exit', function(minion, code, signal) {
     console.log('Minion ' + minion.process.pid + ' has died. Requesting reinforcements.');
     cluster.fork();
   });
@@ -60,30 +60,28 @@ if (cluster.isMaster) {
   }
 } else {
   http.createServer(function(request, response) {
-    var command = config.get('requirejs') + ' -o out=stdout logLevel=4 baseUrl=' + config.get('docroot') + ' name=';
-
     if (~request.url.search(/\.(js|css)$/)) {
       if (~request.url.search(/\.min\.(js|css)$/)) {
         request.url = request.url.replace(/\.min/, '');
 
         fs.exists(config.get('docroot') + request.url, function (exists) {
           if (exists) {
-            command = command + request.url.replace(/^\//, '').replace(/\.(js|css)$/, '');
-            child.exec(command, function(error, stdout, stderr) {
-              if (error) {
-                response.statusCode = 501;
-                response.end('I\'d like to do that, but I don\'t seem to be able to.');
-                console.log(command, stderr, error);
-              } else {
-                response.setHeader('Content-Type', 'text/plain');
-                if (~request.url.search(/\.js$/)) {
-                  response.setHeader('Content-Type', 'application/javascript');
-                } else if (~request.url.search(/\.css$/)) {
-                  response.setHeader('Content-Type', 'text/css');
-                }
-                response.statusCode = 200;
-                response.end(stdout);
-              }
+            var target = request.url.replace(/^\//, '').replace(/\.(js|css)$/, ''),
+                options = ['-o', 'out=stdout', 'logLevel=4', 'baseUrl=' + config.get('docroot'), 'name=' + target],
+                command = child.spawn(config.get('requirejs'), options);
+
+            command.stdout.on('data', function (data) {
+              response.statusCode = 200;
+              response.write(data);
+            }).on('end', function () {
+              response.end();
+            });
+
+            command.stderr.on('data', function (data) {
+              response.statusCode = 500;
+              response.write(data);
+            }).on('end', function () {
+              response.end();
             });
           } else {
             response.statusCode = 404;
